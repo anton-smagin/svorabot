@@ -1,0 +1,24 @@
+default: &default
+  adapter: postgresql
+  timeout: 5000
+
+development:
+  adapter: postgresql
+  encoding: unicode
+  database: svorabot_development
+  pool: 5
+  username: svorabot
+  password: 12345678
+
+test:
+  adapter: postgresql
+  encoding: unicode
+  database: svorabot_test
+  pool: 5
+  username: svorabot
+  password: 12345678
+
+
+production:
+  <<: *default
+  database: db/production.sqlite3
