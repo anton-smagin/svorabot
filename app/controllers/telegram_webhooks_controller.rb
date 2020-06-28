@@ -37,6 +37,16 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   ITEMS_MENU.each do |item|
     define_method("#{item}!") do |*|
+      if Rails.root.join('public', 'img', item.to_s).exist?
+        Dir.foreach(Rails.root.join('public', 'img', item.to_s)) do |filename|
+          next if filename == '.' or filename == '..'
+
+          file =
+            File.open(Rails.root.join('public', 'img', item.to_s, filename))
+
+          reply_with :photo, photo: file
+        end
+      end
       respond_with(
         :message,
         text: t("telegram_webhooks.description.#{item}"),
@@ -116,7 +126,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
         respond_with :message, send_cart_text
       else
         save_context :age!
-        respond_with :message, text: cart.errors.full_messages
+        respond_with :message, text: cart.errors.full_messages.join(',')
       end
     else
       save_context :age!
