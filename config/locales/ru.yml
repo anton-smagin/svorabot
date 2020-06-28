@@ -1,4 +1,14 @@
-en:
+ru:
+  activerecord:
+    attributes:
+      cart:
+        user_age: 'Возраст:'
+    errors:
+      models:
+        cart:
+          attributes:
+            user_age:
+              not_a_number: 'Введите число'
   telegram_webhooks:
     options:
       ticket: 'Билет %{price} - %{count}'
@@ -23,7 +33,12 @@ en:
     cart_empty: 'Тут ничего нет'
     cart_total: 'Всего %{total}'
     forward_to_pay: 'К оплате'
-    leave_name_and_contact: 'Оставьте ваше и имя и контакт чтобы мы с вами смогли связаться'
-    your_contact_is: 'Вы указали контакт для связи: %{contact}'
+    leave_name_and_contact: 'Оставьте ваше имя или соцсеть чтобы мы с вами смогли связаться'
+    your_contact_is: 'Вы указали контакт для связи: %{contact} и возраст %{age}'
     change_contact: 'Изменить контакт'
     pay: 'Оплатить'
+  mails:
+    cart_completed: 'Новая заявка'
+    telegram_username: 'Контакт в телеграме %{contact}'
+    age: 'Возраст %{age}'
+

@@ -54,15 +54,18 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   Cart::ADDABLE_ITEMS.each do |item|
     define_method("add_#{item}") do
-      cart.items[item] = (cart.items[item] || 0) + 1
+      cart.items[item] ||= {}
+      cart.items[item]['count'] = (cart.items[item]['count'] || 0) + 1
       cart.save
       send("edit_#{Cart.category_by(item)}!")
     end
 
     define_method("remove_#{item}") do
-      cart_items = (cart.items[item] || 0)
-      cart.items[item] = cart_items - 1 if cart_items.positive?
-      cart.items.delete(item) if cart.items[item].zero?
+      cart.items[item] ||= {}
+      cart_items = (cart.items[item]['count'] || 0)
+      cart.items[item]['count'] = cart_items - 1 if cart_items.positive?
+      cart.items[item]['count'] = cart_items - 1 if cart_items.positive?
+      cart.items.delete(item) if cart.items[item]['count'].zero?
       send("edit_#{Cart.category_by(item)}!") if cart.changed? && cart.save
     end
   end
@@ -88,15 +91,28 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     end
   end
 
-  def pay!(value = nil, *)
+  def complete!(value = nil, *)
     if value
       cart.update(
         contacts: payload['text'],
         telegram_username: from['username']
       )
-      respond_with(:message, pay_text)
+      age!
     else
-      save_context :pay!
+      respond_with :message, text: t('telegram_webhooks.leave_name_and_contact')
+    end
+  end
+
+  def age!(value = nil, *)
+    if value
+      cart.user_age = value
+      if cart.save
+        respond_with :message, text: pay_text
+      else
+        save_context :age!
+        respond_with :message, text: cart.errors.full_messages
+      end
+    else
       respond_with :message, text: t('telegram_webhooks.leave_name_and_contact')
     end
   end
@@ -142,7 +158,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def cart
-    @cart ||= Cart.find_or_create_by(telegram_id: from['id'], paid: false)
+    @cart ||= Cart.find_or_create_by(telegram_id: from['id'], completed: false)
   end
 
   def cart_total_text
@@ -159,13 +175,17 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   def pay_text
     {
-      text: t('telegram_webhooks.your_contact_is', contact: cart.contacts),
+      text: t(
+        'telegram_webhooks.your_contact_and_age_is',
+        contact: cart.contacts,
+        age: cart.user_age
+      ),
       reply_markup: {
         inline_keyboard: [
           [
             {
               text: t('telegram_webhooks.change_contact'),
-              callback_data: :pay!
+              callback_data: :complete!
             }
           ],
           [{ text: t('telegram_webhooks.pay'), url: 'google.com' }]

@@ -44,6 +44,8 @@ class Cart < ApplicationRecord # :nodoc:
 
   ADDABLE_ITEMS = ITEMS.values.flatten.freeze
 
+  validates :user_age, numericality: true
+
   def self.category_by(item)
     ITEMS.find { |_, items| items.include?(item) }.first
   end
@@ -53,6 +55,15 @@ class Cart < ApplicationRecord # :nodoc:
   end
 
   def total
-    items.sum { |item, count| self.class.price_by(item) * count }
+    items.sum { |item, info| self.class.price_by(item) * info['count'] }
+  end
+
+  def complete!
+    items.each do |item|
+      item['price'] = self.class.price_by[item]
+    end
+    item.completed = true
+    save
+    CartCompletedMailer.with(cart: self).cart_completed.deliver_now
   end
 end
