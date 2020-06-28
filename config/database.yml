@@ -1,24 +1,22 @@
 default: &default
   adapter: postgresql
   timeout: 5000
+  encoding: unicode
+  pool: 5
+  host: db
+  username: postgres
+  password: <%= ENV['POSTGRES_PASSWORD'] || 12345678 %>
 
 development:
-  adapter: postgresql
-  encoding: unicode
-  database: svorabot_development
-  pool: 5
-  username: svorabot
-  password: 12345678
+  <<: *default
+  database: svora_bot_dev
 
 test:
-  adapter: postgresql
-  encoding: unicode
-  database: svorabot_test
-  pool: 5
-  username: svorabot
-  password: 12345678
+  <<: *default
+  database: svora_bot_test
 
 
 production:
   <<: *default
-  database: db/production.sqlite3
+  database: svora_bot
+
