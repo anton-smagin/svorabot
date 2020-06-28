@@ -64,34 +64,33 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
       cart.items[item] ||= {}
       cart_items = (cart.items[item]['count'] || 0)
       cart.items[item]['count'] = cart_items - 1 if cart_items.positive?
-      cart.items[item]['count'] = cart_items - 1 if cart_items.positive?
       cart.items.delete(item) if cart.items[item]['count'].zero?
       send("edit_#{Cart.category_by(item)}!") if cart.changed? && cart.save
     end
   end
 
   def cart!(*)
-    if cart.items.values.sum.zero?
-      respond_with(:message, text: t('telegram_webhooks.cart_empty'))
-    else
-      respond_with(
-        :message,
-        text: cart_total_text,
-        reply_markup: {
-          inline_keyboard: [
-            [
-              {
-                text: t('telegram_webhooks.forward_to_pay'),
-                callback_data: 'pay!'
-              }
-            ]
+    return cart_empty if cart.empty?
+
+    respond_with(
+      :message,
+      text: cart_total_text,
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: t('telegram_webhooks.forward_to_complete'),
+              callback_data: 'complete!'
+            }
           ]
-        }
-      )
-    end
+        ]
+      }
+    )
   end
 
   def complete!(value = nil, *)
+    return cart_empty if cart.empty?
+
     if value
       cart.update(
         contacts: payload['text'],
@@ -99,22 +98,33 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
       )
       age!
     else
+      save_context :complete!
       respond_with :message, text: t('telegram_webhooks.leave_name_and_contact')
     end
   end
 
   def age!(value = nil, *)
+    return cart_empty if cart.empty?
+
     if value
       cart.user_age = value
       if cart.save
-        respond_with :message, text: pay_text
+        respond_with :message, send_cart_text
       else
         save_context :age!
         respond_with :message, text: cart.errors.full_messages
       end
     else
-      respond_with :message, text: t('telegram_webhooks.leave_name_and_contact')
+      save_context :age!
+      respond_with :message, text: t('telegram_webhooks.leave_age')
     end
+  end
+
+  def send_cart!(*)
+    return cart_empty if cart.empty?
+
+    cart.complete!
+    respond_with :message, text: t('telegram_webhooks.thank_you')
   end
 
   def do_nothing
@@ -163,17 +173,17 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   def cart_total_text
     "#{t('telegram_webhooks.cart')} \n" +
-      cart.items.map do |item, count|
+      cart.items.map do |item, info|
         t(
           "telegram_webhooks.options.#{item}",
-          count: count,
+          count: info['count'],
           price: Cart.price_by(item)
         )
       end.join("\n") +
       "\n#{t('telegram_webhooks.cart_total', total: cart.total)}"
   end
 
-  def pay_text
+  def send_cart_text
     {
       text: t(
         'telegram_webhooks.your_contact_and_age_is',
@@ -185,10 +195,10 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
           [
             {
               text: t('telegram_webhooks.change_contact'),
-              callback_data: :complete!
+              callback_data: 'complete!'
             }
           ],
-          [{ text: t('telegram_webhooks.pay'), url: 'google.com' }]
+          [{ text: t('telegram_webhooks.pay'), callback_data: 'send_cart!' }]
         ]
       }
     }
@@ -200,7 +210,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
         {
           text: t("telegram_webhooks.options.#{option}",
                   price: price,
-                  count: cart.items[option] || 0),
+                  count: cart.items.dig(option, 'count') || 0),
           callback_data: 'do_nothing'
         }
       ],
@@ -209,5 +219,9 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
         { text: '➕', callback_data: "add_#{option}" }
       ]
     ]
+  end
+
+  def cart_empty
+    respond_with(:message, text: t('telegram_webhooks.cart_empty'))
   end
 end

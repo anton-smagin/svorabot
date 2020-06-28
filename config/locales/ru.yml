@@ -32,13 +32,16 @@ ru:
     start: 'Привет'
     cart_empty: 'Тут ничего нет'
     cart_total: 'Всего %{total}'
-    forward_to_pay: 'К оплате'
+    forward_to_complete: 'К оплате'
     leave_name_and_contact: 'Оставьте ваше имя или соцсеть чтобы мы с вами смогли связаться'
-    your_contact_is: 'Вы указали контакт для связи: %{contact} и возраст %{age}'
+    leave_age: 'Сколько вам лет'
+    your_contact_and_age_is: 'Вы указали контакт для связи: %{contact} и возраст %{age}'
     change_contact: 'Изменить контакт'
     pay: 'Оплатить'
+    thank_you: 'Спасибо мы с вами свяжемся'
   mails:
     cart_completed: 'Новая заявка'
+    leaved_contact: 'Указанное имя или соцсеть %{contact}'
     telegram_username: 'Контакт в телеграме %{contact}'
     age: 'Возраст %{age}'
 

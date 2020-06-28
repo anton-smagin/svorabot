@@ -3,5 +3,7 @@ class CartCompletedMailer < ApplicationMailer
 
   def cart_completed
     @cart = params[:cart]
+
+    mail(to: EMAILS_TO, subject: t('mails.cart_completed'))
   end
 end
