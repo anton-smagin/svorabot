@@ -23,6 +23,10 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     end
   end
 
+  def about!(*)
+    start!
+  end
+
   def next_step!(value, *)
     respond_with :message, text: value
   end
@@ -35,7 +39,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     define_method("#{item}!") do |*|
       respond_with(
         :message,
-        text: t("telegram_webhooks.#{item}"),
+        text: t("telegram_webhooks.description.#{item}"),
         reply_markup: { inline_keyboard: send("#{item}_keyboard") }
       )
     end

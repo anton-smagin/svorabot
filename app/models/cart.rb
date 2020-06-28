@@ -6,25 +6,26 @@ class Cart < ApplicationRecord # :nodoc:
   TICKET_OPTIONS = { 'ticket' => 3000 }.freeze
 
   TRANSFER_OPTIONS = {
-    'transfer_from_galich' => 1250,
-    'transfer_from_moscow' => 3000
+    'transfer_from_galich_30_07_02_08' => 700,
+    'transfer_from_galich_31_07_02_08' => 700,
+    'transfer_from_moscow_29_07_02_08' => 3200
   }.freeze
 
   FOOD_OPTIONS = {
-    'food_thursday' => 500,
-    'food_friday' => 500,
-    'food_saturday' => 500,
-    'food_sunday' => 500
+    'food_30_07' => 500,
+    'food_31_07' => 500,
+    'food_01_08' => 500,
+    'food_02_08' => 500
   }.freeze
 
   MERCH_OPTIONS = {
-    'tshirt' => 800,
+    'tshirt' => 1800,
     'flask' => 500
   }.freeze
 
   EXCURSION_OPTIONS = {
-    'bath' => 1000,
-    'rafting' => 1500
+    'bath' => 6000,
+    'pogorelovo' => 1000
   }.freeze
 
   ALL_OPTIONS = TICKET_OPTIONS.merge(
