@@ -121,28 +121,6 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   def share_contact!(*)
     return cart_empty if cart.empty?
 
-    # cart.update(telegram_username: from['username'])
-    # if cart.telegram_username.blank?
-    #   save_context :share_contact!
-
-    #   return respond_with(
-    #     :message,
-    #     text: t('telegram_webhooks.please_share_your_contact'),
-    #     reply_markup: {
-    #       keyboard: [
-    #         [
-    #           {
-    #             text: t('telegram_webhooks.share_contact'),
-    #             request_contact: true
-    #           }
-    #         ]
-    #       ],
-    #       one_time_keyboard: false,
-    #       resize_keyboard: true
-    #     }
-    #   )
-    # end
-
     age!
   end
 

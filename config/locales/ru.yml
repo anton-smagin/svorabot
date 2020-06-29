@@ -47,7 +47,7 @@ ru:
     cart_empty: 'Тут ничего нет'
     cart_total: 'Всего %{total}'
     forward_to_complete: 'К оплате'
-    leave_name_and_contact: 'Оставьте ваше имя или соцсеть чтобы мы с вами смогли связаться'
+    leave_name_and_contact: 'Оставьте соцсеть, телефон или ник в телеграме чтобы мы с вами смогли связаться'
     leave_age: 'Сколько вам лет'
     your_contact_and_age_is: 'Вы указали контакт для связи: %{contact} и возраст %{age}'
     change_contact: 'Изменить контакт'
@@ -59,7 +59,7 @@ ru:
     share_contact: 'Поделиться телеграмом'
   mails:
     cart_completed: 'Новая заявка'
-    leaved_contact: 'Указанное имя или соцсеть %{contact}'
+    leaved_contact: 'Ваш контакт %{contact}'
     telegram_username: 'Контакт в телеграме %{contact}'
     age: 'Возраст %{age}'
 
