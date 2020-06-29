@@ -66,6 +66,11 @@ class Cart < ApplicationRecord # :nodoc:
     CartCompletedMailer.with(cart: self).cart_completed.deliver_now
   end
 
+  def clear!
+    self.items = {}
+    save
+  end
+
   def empty?
     items.sum { |_item, info| info['count'] }.zero?
   end

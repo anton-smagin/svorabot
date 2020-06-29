@@ -3,32 +3,32 @@
 class TelegramWebhooksController < Telegram::Bot::UpdatesController
   include Telegram::Bot::UpdatesController::MessageContext
 
-  MENU = %i[about ticket transfer food excursion merch cart].map do |category|
-    [category, t("telegram_webhooks.#{category}")]
-  end.to_h.freeze
+  MENU = %i[about ticket transfer food excursion merch cart help]
+    .map do |category|
+      [category, t("telegram_webhooks.categories.#{category}")]
+    end.to_h.freeze
 
   ITEMS_MENU = %i[ticket transfer food excursion merch].freeze
 
   def start!(value = nil, *_args)
-    if value
-      send("#{MENU.find { |_k, v| v == value }&.first}!")
-    else
-      save_context :start!
-      respond_with :message, text: t('telegram_webhooks.start'), reply_markup: {
-        keyboard: MENU.values.each_slice(2).to_a,
-        resize_keyboard: true,
-        one_time_keyboard: false,
-        selective: true
-      }
-    end
+    respond_with(
+      :message,
+      text: t('telegram_webhooks.description.start'),
+      reply_markup: default_keyboard
+    )
+  end
+
+  def help!(*)
+    respond_with(
+      :message,
+      text: t('telegram_webhooks.help') + "\n" +
+      t('telegram_webhooks.categories')
+        .map { |command, name| "/#{command} #{name}\n" }.join('')
+    )
   end
 
   def about!(*)
     start!
-  end
-
-  def next_step!(value, *)
-    respond_with :message, text: value
   end
 
   def callback_query(data)
@@ -96,7 +96,8 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
               text: t('telegram_webhooks.forward_to_complete'),
               callback_data: 'complete!'
             }
-          ]
+          ],
+          [{ text: t('telegram_webhooks.clear'), callback_data: 'clear_cart!' }]
         ]
       }
     )
@@ -110,11 +111,39 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
         contacts: payload['text'],
         telegram_username: from['username']
       )
-      age!
+      share_contact!
     else
       save_context :complete!
       respond_with :message, text: t('telegram_webhooks.leave_name_and_contact')
     end
+  end
+
+  def share_contact!(*)
+    return cart_empty if cart.empty?
+
+    # cart.update(telegram_username: from['username'])
+    # if cart.telegram_username.blank?
+    #   save_context :share_contact!
+
+    #   return respond_with(
+    #     :message,
+    #     text: t('telegram_webhooks.please_share_your_contact'),
+    #     reply_markup: {
+    #       keyboard: [
+    #         [
+    #           {
+    #             text: t('telegram_webhooks.share_contact'),
+    #             request_contact: true
+    #           }
+    #         ]
+    #       ],
+    #       one_time_keyboard: false,
+    #       resize_keyboard: true
+    #     }
+    #   )
+    # end
+
+    age!
   end
 
   def age!(value = nil, *)
@@ -139,6 +168,11 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
     cart.complete!
     respond_with :message, text: t('telegram_webhooks.thank_you')
+  end
+
+  def clear_cart!(*)
+    cart.clear!
+    cart!
   end
 
   def do_nothing
@@ -186,7 +220,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def cart_total_text
-    "#{t('telegram_webhooks.cart')} \n" +
+    "#{t('telegram_webhooks.categories.cart')} \n" +
       cart.items.map do |item, info|
         t(
           "telegram_webhooks.options.#{item}",
@@ -237,5 +271,14 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   def cart_empty
     respond_with(:message, text: t('telegram_webhooks.cart_empty'))
+  end
+
+  def default_keyboard
+    {
+      keyboard: MENU.values.each_slice(3).to_a,
+      resize_keyboard: true,
+      one_time_keyboard: false,
+      selective: true
+    }
   end
 end
