@@ -16,6 +16,10 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
       text: t('telegram_webhooks.description.start'),
       reply_markup: default_keyboard
     )
+    respond_with(
+      :photo,
+      photo: File.open(Rails.root.join('public', 'img', 'afisha.png'))
+    )
   end
 
   def help!(*)
@@ -50,7 +54,8 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
       respond_with(
         :message,
         text: t("telegram_webhooks.description.#{item}"),
-        reply_markup: { inline_keyboard: send("#{item}_keyboard") }
+        reply_markup: { inline_keyboard: send("#{item}_keyboard") },
+        parse_mode: 'Markdown'
       )
     end
 
