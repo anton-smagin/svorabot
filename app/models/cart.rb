@@ -6,9 +6,9 @@ class Cart < ApplicationRecord # :nodoc:
   TICKET_OPTIONS = { 'ticket' => 3000 }.freeze
 
   TRANSFER_OPTIONS = {
+    'transfer_from_moscow_29_07_02_08' => 3200,
     'transfer_from_galich_30_07_02_08' => 700,
-    'transfer_from_galich_31_07_02_08' => 700,
-    'transfer_from_moscow_29_07_02_08' => 3200
+    'transfer_from_galich_31_07_02_08' => 700
   }.freeze
 
   FOOD_OPTIONS = {
