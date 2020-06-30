@@ -43,7 +43,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     define_method("#{item}!") do |*|
       if Rails.root.join('public', 'img', item.to_s).exist?
         Dir.foreach(Rails.root.join('public', 'img', item.to_s)) do |filename|
-          next if filename == '.' or filename == '..'
+          next unless filename.match(/png|gif|jpeg|jpg/)
 
           file =
             File.open(Rails.root.join('public', 'img', item.to_s, filename))
