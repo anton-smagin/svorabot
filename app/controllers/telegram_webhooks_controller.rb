@@ -8,7 +8,13 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
       [category, t("telegram_webhooks.categories.#{category}")]
     end.to_h.freeze
 
-  ITEMS_MENU = %i[ticket transfer food excursion merch].freeze
+  ITEMS_MENU = {
+    'ticket' => ['ticket'],
+    'transfer' => %w[transfer_moscow transfer_galich],
+    'food' => ['food'],
+    'excursion' => ['excursion'],
+    'merch' => ['merch']
+  }.freeze
 
   def start!(value = nil, *_args)
     respond_with(
@@ -39,7 +45,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     send(data)
   end
 
-  ITEMS_MENU.each do |item|
+  ITEMS_MENU.each do |item, subitems|
     define_method("#{item}!") do |*|
       if Rails.root.join('public', 'img', item.to_s).exist?
         Dir.foreach(Rails.root.join('public', 'img', item.to_s)) do |filename|
@@ -51,19 +57,22 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
           reply_with :photo, photo: file
         end
       end
-      respond_with(
-        :message,
-        text: t("telegram_webhooks.description.#{item}"),
-        reply_markup: { inline_keyboard: send("#{item}_keyboard") },
-        parse_mode: 'Markdown'
-      )
+      if t("telegram_webhooks.description.#{item}").is_a? String
+        respond_item_keyboard(item)
+      elsif t("telegram_webhooks.description.#{item}").is_a? Hash
+        t("telegram_webhooks.description.#{item}").each do |item2, _text|
+          respond_item_keyboard(item, item2)
+        end
+      end
     end
 
-    define_method("edit_#{item}!") do |*|
-      edit_message(
-        :reply_markup,
-        reply_markup: { inline_keyboard: send("#{item}_keyboard") }
-      )
+    subitems.each do |subitem|
+      define_method("edit_#{subitem}!") do |*|
+        edit_message(
+          :reply_markup,
+          reply_markup: { inline_keyboard: send("#{subitem}_keyboard") }
+        )
+      end
     end
   end
 
@@ -174,8 +183,14 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
       .flatten(1)
   end
 
-  def transfer_keyboard
-    Cart::TRANSFER_OPTIONS
+  def transfer_moscow_keyboard
+    Cart::TRANSFER_MOSCOW_OPTIONS
+      .map { |option, price| build_cart_item(option, price) }
+      .flatten(1)
+  end
+
+  def transfer_galich_keyboard
+    Cart::TRANSFER_GALICH_OPTIONS
       .map { |option, price| build_cart_item(option, price) }
       .flatten(1)
   end
@@ -263,5 +278,15 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
       one_time_keyboard: false,
       selective: true
     }
+  end
+
+  def respond_item_keyboard(item, subitem = nil)
+    text = ['telegram_webhooks', 'description', item, subitem].join('.')
+    respond_with(
+      :message,
+      text: t(text),
+      reply_markup: { inline_keyboard: send("#{subitem || item}_keyboard") },
+      parse_mode: 'Markdown'
+    )
   end
 end

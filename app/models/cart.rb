@@ -5,8 +5,11 @@ class Cart < ApplicationRecord # :nodoc:
 
   TICKET_OPTIONS = { 'ticket' => 3000 }.freeze
 
-  TRANSFER_OPTIONS = {
-    'transfer_from_moscow_29_07_02_08' => 3200,
+  TRANSFER_MOSCOW_OPTIONS = {
+    'transfer_from_moscow_29_07_02_08' => 3200
+  }.freeze
+
+  TRANSFER_GALICH_OPTIONS = {
     'transfer_from_galich_30_07_02_08' => 700,
     'transfer_from_galich_31_07_02_08' => 700
   }.freeze
@@ -29,7 +32,8 @@ class Cart < ApplicationRecord # :nodoc:
   }.freeze
 
   ALL_OPTIONS = TICKET_OPTIONS.merge(
-    TRANSFER_OPTIONS,
+    TRANSFER_MOSCOW_OPTIONS,
+    TRANSFER_GALICH_OPTIONS,
     FOOD_OPTIONS,
     MERCH_OPTIONS,
     EXCURSION_OPTIONS
@@ -37,7 +41,8 @@ class Cart < ApplicationRecord # :nodoc:
 
   ITEMS = {
     ticket: TICKET_OPTIONS.keys,
-    transfer: TRANSFER_OPTIONS.keys,
+    transfer_moscow: TRANSFER_MOSCOW_OPTIONS.keys,
+    transfer_galich: TRANSFER_GALICH_OPTIONS.keys,
     excursion: EXCURSION_OPTIONS.keys,
     merch: MERCH_OPTIONS.keys,
     food: FOOD_OPTIONS.keys
