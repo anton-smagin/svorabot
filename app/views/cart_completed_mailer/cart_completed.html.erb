@@ -1,8 +1,9 @@
 <h3><%= t('mails.cart_completed') %></h3>
 <p><%= t('mails.telegram_username', contact: @cart.telegram_username) %></p>
 <p> <%= t('mails.leaved_contact', contact: @cart.contacts) %> </p>
+<p> <%= t('mails.leaved_instagram', instagram: @cart.instagram) %> </p>
 <p><%= t('mails.age', age: @cart.user_age) %></p>
-<% @cart.items.each do |item, info| %>
+<% @cart.items.sort_by { |k, v| Cart::ALL_OPTIONS.keys.index(k) }.each do |item, info| %>
   <p><%= t("telegram_webhooks.options.#{item}", price: info['price'], count: info['count']) %></p>
 <% end %>
 <p><%= t('telegram_webhooks.cart_total', total: @cart.total) %></p>

@@ -132,10 +132,16 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     end
   end
 
-  def share_contact!(*)
+  def share_contact!(value = nil, *)
     return cart_empty if cart.empty?
 
-    age!
+    if value
+      cart.update(instagram: payload['text'])
+      age!
+    else
+      save_context :share_contact!
+      respond_with :message, text: t('telegram_webhooks.leave_instagram')
+    end
   end
 
   def age!(value = nil, *)
@@ -234,7 +240,8 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
       text: t(
         'telegram_webhooks.your_contact_and_age_is',
         contact: cart.contacts,
-        age: cart.user_age
+        age: cart.user_age,
+        instagram: cart.instagram
       ),
       reply_markup: {
         inline_keyboard: [
