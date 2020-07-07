@@ -47,8 +47,9 @@ ru:
     forward_to_complete: 'К оплате'
     leave_name_and_contact: 'Оставьте соцсеть, телефон или ник в телеграме чтобы мы с вами смогли связаться'
     leave_instagram: 'Оставьте ваш профиль в инстаграме'
-    leave_age: 'Сколько вам лет'
-    your_contact_and_age_is: 'Вы указали контакт для связи: %{contact}, инстаграм: %{instagram} и возраст %{age}'
+    leave_age: 'Сколько вам лет?'
+    leave_name: 'Как вас зовут?'
+    your_contact_and_age_is: 'Вы указали контакт для связи: %{contact}, инстаграм: %{instagram}, имя: %{full_name} и возраст %{age}'
     change_contact: 'Изменить контакт'
     clear: 'Очистить корзину'
     pay: 'Оплатить'
@@ -61,5 +62,6 @@ ru:
     leaved_contact: 'Контакт %{contact}'
     telegram_username: 'Контакт в телеграме @%{contact}'
     leaved_instagram: 'Инстаграм %{instagram}'
+    name: 'Имя %{full_name}'
     age: 'Возраст %{age}'
 

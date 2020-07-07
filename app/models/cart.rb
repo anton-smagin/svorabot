@@ -64,11 +64,33 @@ class Cart < ApplicationRecord # :nodoc:
     items.sum { |item, info| self.class.price_by(item) * info['count'] }
   end
 
+  def party_total
+    party_items.sum { |item, info| self.class.price_by(item) * info['count'] }
+  end
+
+  def merch_total
+    merch_items.sum { |item, info| self.class.price_by(item) * info['count'] }
+  end
+
+  def merch_items
+    items.slice(*MERCH_OPTIONS.keys)
+  end
+
+  def party_items
+    items.slice(*(ALL_OPTIONS.keys - MERCH_OPTIONS.keys))
+  end
+
   def complete!
     items.each { |item, info| info['price'] = self.class.price_by(item) }
     self.completed = true
     save
-    CartCompletedMailer.with(cart: self).cart_completed.deliver_now
+    binding.pry
+    if party_items.present?
+      CartCompletedMailer.with(cart: self).cart_completed.deliver_now
+    end
+    if merch_items.present?
+      CartCompletedMailer.with(cart: self).cart_with_merch_completed.deliver_now
+    end
   end
 
   def clear!

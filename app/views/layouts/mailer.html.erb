@@ -8,6 +8,12 @@
   </head>
 
   <body>
+    <h3><%= t('mails.cart_completed') %></h3>
+    <p><%= t('mails.telegram_username', contact: @cart.telegram_username) %></p>
+    <p><%= t('mails.name', full_name: @cart.full_name) %></p>
+    <p><%= t('mails.leaved_contact', contact: @cart.contacts) %></p>
+    <p><%= t('mails.leaved_instagram', instagram: @cart.instagram) %></p>
+    <p><%= t('mails.age', age: @cart.user_age) %></p>
     <%= yield %>
   </body>
 </html>

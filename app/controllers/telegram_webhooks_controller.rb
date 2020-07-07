@@ -70,6 +70,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
       define_method("edit_#{subitem}!") do |*|
         edit_message(
           :reply_markup,
+          keyboard: default_keyboard,
           reply_markup: { inline_keyboard: send("#{subitem}_keyboard") }
         )
       end
@@ -137,7 +138,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
     if value
       cart.update(instagram: payload['text'])
-      age!
+      full_name!
     else
       save_context :share_contact!
       respond_with :message, text: t('telegram_webhooks.leave_instagram')
@@ -158,6 +159,19 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     else
       save_context :age!
       respond_with :message, text: t('telegram_webhooks.leave_age')
+    end
+  end
+
+  def full_name!(value = nil, *)
+    return cart_empty if cart.empty?
+
+    if value
+      cart.full_name = value
+      cart.save
+      age!
+    else
+      save_context :full_name!
+      respond_with :message, text: t('telegram_webhooks.leave_name')
     end
   end
 
@@ -241,7 +255,8 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
         'telegram_webhooks.your_contact_and_age_is',
         contact: cart.contacts,
         age: cart.user_age,
-        instagram: cart.instagram
+        instagram: cart.instagram,
+        full_name: cart.full_name
       ),
       reply_markup: {
         inline_keyboard: [
@@ -283,7 +298,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
       keyboard: MENU.values.each_slice(3).to_a,
       resize_keyboard: true,
       one_time_keyboard: false,
-      selective: true
+      selective: false
     }
   end
 
