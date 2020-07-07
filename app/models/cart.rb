@@ -84,9 +84,7 @@ class Cart < ApplicationRecord # :nodoc:
     items.each { |item, info| info['price'] = self.class.price_by(item) }
     self.completed = true
     save
-    if party_items.present?
-      CartCompletedMailer.with(cart: self).cart_completed.deliver_now
-    end
+    CartCompletedMailer.with(cart: self).cart_completed.deliver_now
     if merch_items.present?
       CartCompletedMailer.with(cart: self).cart_with_merch_completed.deliver_now
     end
