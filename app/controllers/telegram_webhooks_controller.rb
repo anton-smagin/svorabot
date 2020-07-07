@@ -166,8 +166,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     return cart_empty if cart.empty?
 
     if value
-      cart.full_name = value
-      cart.save
+      cart.update(full_name: payload['text'])
       age!
     else
       save_context :full_name!
