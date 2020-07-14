@@ -3,7 +3,9 @@
 class Cart < ApplicationRecord # :nodoc:
   acts_as_paranoid
 
-  TICKET_OPTIONS = { 'ticket' => 3000 }.freeze
+  TICKET_OPTIONS = {
+    # 'ticket' => 3000
+  }.freeze
 
   TRANSFER_MOSCOW_OPTIONS = {
     'transfer_from_moscow_29_07_02_08' => 3200
