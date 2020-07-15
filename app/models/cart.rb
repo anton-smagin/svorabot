@@ -17,10 +17,10 @@ class Cart < ApplicationRecord # :nodoc:
   }.freeze
 
   FOOD_OPTIONS = {
-    'food_30_07' => 500,
-    'food_31_07' => 500,
-    'food_01_08' => 500,
-    'food_02_08' => 500
+    # 'food_30_07' => 500,
+    # 'food_31_07' => 500,
+    # 'food_01_08' => 500,
+    # 'food_02_08' => 500
   }.freeze
 
   MERCH_OPTIONS = {
