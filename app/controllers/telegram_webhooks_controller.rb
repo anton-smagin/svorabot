@@ -3,38 +3,11 @@
 class TelegramWebhooksController < Telegram::Bot::UpdatesController
   include Telegram::Bot::UpdatesController::MessageContext
 
-  MENU = %i[about lineup ticket transfer food excursion merch cart help]
-         .map do |category|
-    [category, t("telegram_webhooks.categories.#{category}")]
-  end.to_h.freeze
-  ARTISTS = I18n.t('telegram_webhooks.artists').keys.freeze
-
-  ITEMS_MENU = {
-    'ticket' => ['ticket'],
-    'transfer' => %w[transfer_moscow transfer_galich],
-    'food' => ['food'],
-    'excursion' => ['excursion'],
-    'merch' => ['merch']
-  }.freeze
-
   def start!(_value = nil, *_args)
-    respond_with(
-      :message,
-      text: t('telegram_webhooks.description.start'),
-      reply_markup: default_keyboard
-    )
+    respond_with(:message, text: t('telegram_webhooks.description.start'))
     respond_with(
       :photo,
       photo: File.open(Rails.root.join('public', 'img', 'afisha.png'))
-    )
-  end
-
-  def help!(*)
-    respond_with(
-      :message,
-      text: t('telegram_webhooks.help') + "\n" +
-      t('telegram_webhooks.categories')
-        .map { |command, name| "/#{command} #{name}\n" }.join('')
     )
   end
 
@@ -42,61 +15,8 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     start!
   end
 
-  def callback_query(data)
-    send(data)
-  end
-
-  ITEMS_MENU.each do |item, subitems|
-    define_method("#{item}!") do |*|
-      if Rails.root.join('public', 'img', item.to_s).exist?
-        Dir.foreach(Rails.root.join('public', 'img', item.to_s)) do |filename|
-          next unless /png|gif|jpeg|jpg/.match?(filename)
-
-          file =
-            File.open(Rails.root.join('public', 'img', item.to_s, filename))
-
-          reply_with :photo, photo: file
-        end
-      end
-      if t("telegram_webhooks.description.#{item}").is_a? String
-        respond_item_keyboard(item)
-      elsif t("telegram_webhooks.description.#{item}").is_a? Hash
-        t("telegram_webhooks.description.#{item}").each do |item2, _text|
-          respond_item_keyboard(item, item2)
-        end
-      end
-    end
-
-    subitems.each do |subitem|
-      define_method("edit_#{subitem}!") do |*|
-        edit_message(
-          :reply_markup,
-          keyboard: default_keyboard,
-          reply_markup: { inline_keyboard: send("#{subitem}_keyboard") }
-        )
-      end
-    end
-  end
-
   def action_missing(_action, *args)
     start!(*args)
-  end
-
-  Cart::ADDABLE_ITEMS.each do |item|
-    define_method("add_#{item}") do
-      cart.items[item] ||= {}
-      cart.items[item]['count'] = (cart.items[item]['count'] || 0) + 1
-      cart.save
-      send("edit_#{Cart.category_by(item)}!")
-    end
-
-    define_method("remove_#{item}") do
-      cart.items[item] ||= {}
-      cart_items = (cart.items[item]['count'] || 0)
-      cart.items[item]['count'] = cart_items - 1 if cart_items.positive?
-      cart.items.delete(item) if cart.items[item]['count'].zero?
-      send("edit_#{Cart.category_by(item)}!") if cart.changed? && cart.save
-    end
   end
 
   def cart!(*)
@@ -117,36 +37,6 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
         ]
       }
     )
-  end
-
-  def lineup!(*)
-    respond_with(
-      :message,
-      text: t('telegram_webhooks.description.lineup'),
-      reply_markup: default_keyboard
-    )
-
-    t('telegram_webhooks.timetable').each do |day, stages|
-      stages.each do |stage, artists|
-        message_text = t("telegram_webhooks.categories.#{day}")
-        message_text +=  " #{t("telegram_webhooks.stages.#{stage}")}"
-        respond_with(
-          :message,
-          text: message_text,
-          reply_markup: {
-            inline_keyboard: artists.map do |artist, time|
-              [{ text: time, callback_data: "artist_#{artist}!" }]
-            end
-          }
-        )
-      end
-    end
-  end
-
-  ARTISTS.each do |artist_name|
-    define_method("artist_#{artist_name}!") do
-      artist_info(artist_name)
-    end
   end
 
   def complete!(value = nil, *)
@@ -221,43 +111,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     # do nothing
   end
 
-  def message(message)
-    return start! if t('telegram_webhooks.categories.home') == message['text']
-
-    send("#{MENU.find { |_k, v| v == message['text'] }&.first}!")
-  end
-
   private
-
-  def ticket_keyboard
-    Cart::TICKET_OPTIONS
-      .flat_map { |option, price| build_cart_item(option, price) }
-  end
-
-  def transfer_moscow_keyboard
-    Cart::TRANSFER_MOSCOW_OPTIONS
-      .flat_map { |option, price| build_cart_item(option, price) }
-  end
-
-  def transfer_galich_keyboard
-    Cart::TRANSFER_GALICH_OPTIONS
-      .flat_map { |option, price| build_cart_item(option, price) }
-  end
-
-  def excursion_keyboard
-    Cart::EXCURSION_OPTIONS
-      .flat_map { |option, price| build_cart_item(option, price) }
-  end
-
-  def merch_keyboard
-    Cart::MERCH_OPTIONS
-      .flat_map { |option, price| build_cart_item(option, price) }
-  end
-
-  def food_keyboard
-    Cart::FOOD_OPTIONS
-      .flat_map { |option, price| build_cart_item(option, price) }
-  end
 
   def cart
     @cart ||= Cart.find_or_create_by(telegram_id: from['id'], completed: false)
@@ -324,15 +178,6 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     photo_path = Rails.root.join('public', 'img', 'artists', "#{artist}.jpg")
 
     reply_with :photo, photo: File.open(photo_path) if File.exist?(photo_path)
-  end
-
-  def default_keyboard
-    {
-      keyboard: MENU.values.each_slice(3).to_a,
-      resize_keyboard: true,
-      one_time_keyboard: false,
-      selective: false
-    }
   end
 
   def respond_item_keyboard(item, subitem = nil)
