@@ -2,12 +2,37 @@
 
 class TelegramWebhooksController < Telegram::Bot::UpdatesController
   include Telegram::Bot::UpdatesController::MessageContext
+  TEST_QUESTIONS =
+    t('telegram_webhooks.test').keys.freeze
+
+  TEST_QUESTIONS.each.with_index do |step, index|
+    define_method("#{step}!") do |*|
+      respond_with(
+        :message,
+        text: t("telegram_webhooks.test.#{step}.question"),
+        reply_markup: { inline_keyboard: test_keyboard(step, index) }
+      )
+    end
+  end
 
   def start!(_value = nil, *_args)
-    respond_with(:message, text: t('telegram_webhooks.description.start'))
     respond_with(
       :photo,
       photo: File.open(Rails.root.join('public', 'img', 'afisha.png'))
+    )
+    respond_with(
+      :message,
+      text: t('telegram_webhooks.description.start'),
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: t('telegram_webhooks.go'),
+              callback_data: "#{TEST_QUESTIONS[0]}!"
+            }
+          ]
+        ]
+      }
     )
   end
 
@@ -40,14 +65,11 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def complete!(value = nil, *)
-    return cart_empty if cart.empty?
-
     if value
       cart.update(
-        contacts: payload['text'],
-        telegram_username: from['username']
+        contacts: payload['text'], telegram_username: from['username']
       )
-      share_contact!
+      share_name!
     else
       save_context :complete!
       respond_with :message, text: t('telegram_webhooks.leave_name_and_contact')
@@ -55,8 +77,6 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def share_contact!(value = nil, *)
-    return cart_empty if cart.empty?
-
     if value
       cart.update(instagram: payload['text'])
       full_name!
@@ -67,8 +87,6 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def age!(value = nil, *)
-    return cart_empty if cart.empty?
-
     if value
       cart.user_age = value
       if cart.save
@@ -84,8 +102,6 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def full_name!(value = nil, *)
-    return cart_empty if cart.empty?
-
     if value
       cart.update(full_name: payload['text'])
       age!
@@ -96,8 +112,6 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def send_cart!(*)
-    return cart_empty if cart.empty?
-
     cart.complete!
     respond_with :message, text: t('telegram_webhooks.thank_you')
   end
@@ -109,6 +123,10 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   def do_nothing
     # do nothing
+  end
+
+  def callback_query(data)
+    send(data)
   end
 
   private
@@ -188,5 +206,17 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
       reply_markup: { inline_keyboard: send("#{subitem || item}_keyboard") },
       parse_mode: 'Markdown'
     )
+  end
+
+  def test_keyboard(step, index)
+    next_callback = TEST_QUESTIONS[index + 1] || 'complete!'
+    %w[button_1 button_2].map do |button|
+      [
+        {
+          text: t("telegram_webhooks.test.#{step}.#{button}"),
+          callback_data: next_callback
+        }
+      ]
+    end
   end
 end
