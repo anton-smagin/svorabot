@@ -3,6 +3,8 @@
 class Cart < ApplicationRecord # :nodoc:
   acts_as_paranoid
 
+  scope :completed, -> { where(completed: true) }
+
   TICKET_OPTIONS = {
     # 'ticket' => 3000
   }.freeze

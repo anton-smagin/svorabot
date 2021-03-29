@@ -2,6 +2,9 @@
 
 class TelegramWebhooksController < Telegram::Bot::UpdatesController
   include Telegram::Bot::UpdatesController::MessageContext
+
+  around_action :check_ticket_available
+
   TEST_QUESTIONS =
     t('telegram_webhooks.test').keys.freeze
 
@@ -69,19 +72,19 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
       cart.update(
         contacts: payload['text'], telegram_username: from['username']
       )
-      share_name!
+      share_instagram!
     else
       save_context :complete!
       respond_with :message, text: t('telegram_webhooks.leave_name_and_contact')
     end
   end
 
-  def share_contact!(value = nil, *)
+  def share_instagram!(value = nil, *)
     if value
       cart.update(instagram: payload['text'])
       full_name!
     else
-      save_context :share_contact!
+      save_context :share_instagram!
       respond_with :message, text: t('telegram_webhooks.leave_instagram')
     end
   end
@@ -127,6 +130,16 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   def callback_query(data)
     send(data)
+  end
+
+  def check_ticket_available
+    if Cart.count > 50
+      respond_with :message, text: t('telegram_webhooks.preorder_closed')
+    elsif Cart.completed.where(telegram_id: from['id']).exists?
+      respond_with :message, text: t('telegram_webhooks.thank_you')
+    else
+      yield
+    end
   end
 
   private
@@ -209,12 +222,12 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def test_keyboard(step, index)
-    next_callback = TEST_QUESTIONS[index + 1] || 'complete!'
+    next_callback = TEST_QUESTIONS[index + 1] || 'complete'
     %w[button_1 button_2].map do |button|
       [
         {
           text: t("telegram_webhooks.test.#{step}.#{button}"),
-          callback_data: next_callback
+          callback_data: "#{next_callback}!"
         }
       ]
     end
