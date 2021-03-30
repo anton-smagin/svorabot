@@ -1,13 +1,13 @@
 ru:
   activerecord:
     attributes:
-      cart:
-        user_age: 'Возраст:'
+      user:
+        age: 'Возраст:'
     errors:
       models:
-        cart:
+        user:
           attributes:
-            user_age:
+            age:
               not_a_number: 'Это цифра'
   telegram_webhooks:
     description:
@@ -46,8 +46,9 @@ ru:
     leave_name_and_contact: "Как ты понял на своре можно все, чтобы попасть попасть на свору расскажи пару слов о себе. \n\nОставь свой контакт в телеграме"
     leave_instagram: 'Оставьте ваш профиль в инстаграме'
     leave_age: 'Сколько вам лет?'
-    leave_name: 'Как вас зовут?'
-    your_contact_and_age_is: 'Вы указали контакт для связи: %{contact}, инстаграм: %{instagram}, имя: %{full_name} и возраст %{age}'
+    leave_first_name: 'Ваше имя?'
+    leave_last_name: 'Ваша фамилия?'
+    your_contact_and_age_is: 'Вы указали контакт для связи: %{contact}, инстаграм: %{instagram}, имя: %{first_name} %{last_name} и возраст %{age}'
     change_contact: 'Изменить контакт'
     clear: 'Очистить корзину'
     pay: 'Оставить заявку'
@@ -56,14 +57,16 @@ ru:
     help: 'Здесь все доступные команды бота'
     please_share_your_contact: 'Оставьте ваше телеграм'
     share_contact: 'Поделиться телеграмом'
+    some_data_missed: 'Каких то данных не хватает, пожалуйста заполни всю информацию'
 
   mails:
     cart_completed: 'Новая заявка'
-    leaved_contact: 'Контакт %{contact}'
-    telegram_username: 'Контакт в телеграме @%{contact}'
-    leaved_instagram: 'Инстаграм %{instagram}'
-    name: 'Имя %{full_name}'
-    age: 'Возраст %{age}'
+    ticket_request_completed: 'Новая заявка на билет'
+    leaved_contact: 'Заполненный контакт в телеграме: %{contact}'
+    telegram_username: 'Контакт в телеграме: @%{contact}'
+    leaved_instagram: 'Инстаграм: %{instagram}'
+    name: 'Имя: %{first_name} %{last_name}'
+    age: 'Возраст: %{age}'
 
 
 

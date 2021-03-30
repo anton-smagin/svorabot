@@ -3,6 +3,7 @@
 class Cart < ApplicationRecord # :nodoc:
   acts_as_paranoid
 
+  belongs_to :user
   scope :completed, -> { where(completed: true) }
 
   TICKET_OPTIONS = {
@@ -53,8 +54,6 @@ class Cart < ApplicationRecord # :nodoc:
   }.freeze
 
   ADDABLE_ITEMS = ITEMS.values.flatten.freeze
-
-  validates :user_age, numericality: true, allow_nil: true
 
   def self.category_by(item)
     ITEMS.find { |_, items| items.include?(item) }.first
