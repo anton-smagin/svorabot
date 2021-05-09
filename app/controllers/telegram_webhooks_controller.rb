@@ -69,13 +69,15 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   def complete!(value = nil, *)
     if value
-      user.contacts =  payload['text']
+      user.contacts = payload['text']
       user.telegram_username = from['username']
       if user.save
         share_instagram!
       else
         save_context :complete!
-        respond_with :message, text: user.errors.full_messages.join(',')
+        respond_with(
+          :message, text: user.errors.full_messages_for(:contacts).join(',')
+        )
       end
     else
       save_context :complete!
@@ -90,7 +92,9 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
         first_name!
       else
         save_context :share_instagram!
-        respond_with :message, text: user.errors.full_messages.join(',')
+        respond_with(
+          :message, text: user.errors.full_messages_for(:instagram).join(',')
+        )
       end
     else
       save_context :share_instagram!
@@ -105,7 +109,9 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
         respond_with :message, before_complete_text
       else
         save_context :age!
-        respond_with :message, text: user.errors.full_messages.join(',')
+        respond_with(
+          :message, text: user.errors.full_messages_for(:age).join(',')
+        )
       end
     else
       save_context :age!
@@ -120,7 +126,9 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
         last_name!
       else
         save_context :first_name!
-        respond_with :message, text: user.errors.full_messages.join(',')
+        respond_with(
+          :message, text: user.errors.full_messages_for(:first_name).join(',')
+        )
       end
     else
       save_context :first_name!
@@ -135,7 +143,9 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
         age!
       else
         save_context :last_name!
-        respond_with :message, text: user.errors.full_messages.join(',')
+        respond_with(
+          :message, text: user.errors.full_messages_for(:last_name).join(',')
+        )
       end
     else
       save_context :last_name!
