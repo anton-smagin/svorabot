@@ -3,12 +3,24 @@ ru:
     attributes:
       user:
         age: 'Возраст:'
+        instagram: 'Инстаграм:'
+        first_name: 'Имя:'
+        last_name: 'Фамилия:'
+        contacts: 'Контакт:'
     errors:
       models:
         user:
           attributes:
             age:
               not_a_number: 'Это цифра'
+            instagram:
+              too_short: 'Должен быть длиннее'
+            contacts:
+              too_short: 'Должен быть длиннее'
+            first_name:
+              too_short: 'Должно быть длиннее'
+            last_name:
+              too_short: 'Должна быть длиннее'
   telegram_webhooks:
     description:
       start: 'Привет. Это чат-бот Своры. Если ты здесь, значит у тебя есть возможность одним из первых купить билет на десятую Свору. Но сначала, пожалуйста, ответь на несколько вопросов:'

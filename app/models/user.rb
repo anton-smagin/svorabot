@@ -5,6 +5,8 @@ class User < ApplicationRecord # :nodoc:
   has_many :carts
 
   validates :age, numericality: true, allow_nil: true
+  %i[instagram first_name last_name contacts]
+    .each { |field| validates_length_of field, in: 2..60 }
 
   def contact_info_filled?
     [instagram, first_name, last_name, age, contacts].all?(&:present?)

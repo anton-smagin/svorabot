@@ -69,10 +69,14 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   def complete!(value = nil, *)
     if value
-      user.update(
-        contacts: payload['text'], telegram_username: from['username']
-      )
-      share_instagram!
+      user.contacts =  payload['text']
+      user.telegram_username = from['username']
+      if user.save
+        share_instagram!
+      else
+        save_context :complete!
+        respond_with :message, text: user.errors.full_messages.join(',')
+      end
     else
       save_context :complete!
       respond_with :message, text: t('telegram_webhooks.leave_name_and_contact')
@@ -81,8 +85,13 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   def share_instagram!(value = nil, *)
     if value
-      user.update(instagram: payload['text'])
-      first_name!
+      user.instagram = payload['text']
+      if user.save
+        first_name!
+      else
+        save_context :share_instagram!
+        respond_with :message, text: user.errors.full_messages.join(',')
+      end
     else
       save_context :share_instagram!
       respond_with :message, text: t('telegram_webhooks.leave_instagram')
@@ -106,8 +115,13 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   def first_name!(value = nil, *)
     if value
-      user.update(first_name: payload['text'])
-      last_name!
+      user.first_name = payload['text']
+      if user.save
+        last_name!
+      else
+        save_context :first_name!
+        respond_with :message, text: user.errors.full_messages.join(',')
+      end
     else
       save_context :first_name!
       respond_with :message, text: t('telegram_webhooks.leave_first_name')
@@ -116,8 +130,13 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   def last_name!(value = nil, *)
     if value
-      user.update(last_name: payload['text'])
-      age!
+      user.last_name = payload['text']
+      if user.save
+        age!
+      else
+        save_context :last_name!
+        respond_with :message, text: user.errors.full_messages.join(',')
+      end
     else
       save_context :last_name!
       respond_with :message, text: t('telegram_webhooks.leave_last_name')
