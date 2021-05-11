@@ -3,6 +3,7 @@
 class TelegramWebhooksController < Telegram::Bot::UpdatesController
   include Telegram::Bot::UpdatesController::MessageContext
 
+  before_action :user
   around_action :check_ticket_available
 
   TEST_QUESTIONS =
@@ -70,7 +71,6 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   def complete!(value = nil, *)
     if value
       user.contacts = payload['text']
-      user.telegram_username = from['username']
       if user.save
         share_instagram!
       else
@@ -193,7 +193,10 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def user
-    @user ||= User.find_or_create_by(telegram_id: from['id'])
+    @user ||= User.find_or_create_by(
+      telegram_id: from['id'],
+      telegram_username: from['username']
+    )
   end
 
   def before_complete_text
