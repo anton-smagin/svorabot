@@ -3,7 +3,7 @@
 class TicketRequest < ApplicationRecord # :nodoc:
   belongs_to :user
 
-  scope :without_rejected, -> { where.not(approved: false) }
+  scope :without_rejected, -> { where(approved: [true, nil]) }
 
   def self.save_request!(user)
     create(user_id: user.id)
