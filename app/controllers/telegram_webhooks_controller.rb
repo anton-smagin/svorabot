@@ -177,7 +177,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def check_ticket_available
-    if TicketRequest.without_rejected.count > 50
+    if TicketRequest.without_rejected.count > 100
       respond_with :message, text: t('telegram_webhooks.preorder_closed')
     elsif (ticket_request = TicketRequest.find_by(user_id: user.id))
       text =
