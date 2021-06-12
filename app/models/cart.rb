@@ -6,51 +6,17 @@ class Cart < ApplicationRecord # :nodoc:
   belongs_to :user
   scope :completed, -> { where(completed: true) }
 
-  TICKET_OPTIONS = {
-    # 'ticket' => 3000
-  }.freeze
-
-  TRANSFER_MOSCOW_OPTIONS = {
-    'transfer_from_moscow_29_07_02_08' => 3200
-  }.freeze
-
-  TRANSFER_GALICH_OPTIONS = {
-    'transfer_from_galich_30_07_02_08' => 700,
-    'transfer_from_galich_31_07_02_08' => 700
-  }.freeze
-
-  FOOD_OPTIONS = {
-    # 'food_30_07' => 500,
-    # 'food_31_07' => 500,
-    # 'food_01_08' => 500,
-    # 'food_02_08' => 500
-  }.freeze
-
   MERCH_OPTIONS = {
     'tshirt' => 1800,
     'flask' => 500
   }.freeze
 
-  EXCURSION_OPTIONS = {
-    'bath' => 6000,
-    'pogorelovo' => 1000
-  }.freeze
-
-  ALL_OPTIONS = TICKET_OPTIONS.merge(
-    TRANSFER_MOSCOW_OPTIONS,
-    TRANSFER_GALICH_OPTIONS,
-    FOOD_OPTIONS,
-    MERCH_OPTIONS,
-    EXCURSION_OPTIONS
-  )
+  ALL_OPTIONS = {
+    **MERCH_OPTIONS
+  }
 
   ITEMS = {
-    ticket: TICKET_OPTIONS.keys,
-    transfer_moscow: TRANSFER_MOSCOW_OPTIONS.keys,
-    transfer_galich: TRANSFER_GALICH_OPTIONS.keys,
-    excursion: EXCURSION_OPTIONS.keys,
-    merch: MERCH_OPTIONS.keys,
-    food: FOOD_OPTIONS.keys
+    merch: MERCH_OPTIONS.keys
   }.freeze
 
   ADDABLE_ITEMS = ITEMS.values.flatten.freeze
