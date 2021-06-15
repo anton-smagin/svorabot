@@ -3,7 +3,6 @@ class TicketRequestMailer < ApplicationMailer
 
   def completed
     @user = params[:user]
-    @ticket_request = params[:ticket_request]
     mail(to: EMAILS_TO, subject: t('mails.cart_completed'))
   end
 end

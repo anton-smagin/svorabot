@@ -20,3 +20,12 @@ services:
       - "3000:3000"
     depends_on:
       - db
+  delayed_job:
+    build: .
+    command: bundle exec rails jobs:work
+    volumes:
+      - .:/myapp
+    env_file:
+      - ./.env
+    depends_on:
+      - db

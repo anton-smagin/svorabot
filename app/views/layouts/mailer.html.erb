@@ -8,7 +8,7 @@
   </head>
 
   <body>
-    <h3><%= t('mails.ticket_request_completed') %></h3>
+    <%= yield %>
     <p><%= t('mails.telegram_username', contact: @user.telegram_username) %></p>
     <p><%= t('mails.name', first_name: @user.first_name, last_name: @user.last_name) %></p>
     <p><%= t('mails.leaved_contact', contact: @user.contacts) %></p>
