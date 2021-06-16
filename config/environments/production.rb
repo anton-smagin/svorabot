@@ -60,7 +60,7 @@ Rails.application.configure do
   # config.cache_store = :mem_cache_store
 
   # Use a real queuing backend for Active Job (and separate queues per environment)
-  config.active_job.queue_adapter = :delayed_job
+  # config.active_job.queue_adapter = :resque
   # config.active_job.queue_name_prefix = "telegram_bot_app_#{Rails.env}"
 
   config.action_mailer.perform_caching = false
@@ -98,7 +98,8 @@ Rails.application.configure do
   # routes.default_url_options = {host: 'yourdomain.com', protocol: 'https'}
 
   # Configure session store for telegram bot.
-  config.telegram_updates_controller.session_store = :redis_store, { expires_in: 1.month }
+  config.telegram_updates_controller.session_store =
+    :redis_store, 'redis://redis/0/cache', { expires_in: 1.month }
 
   config.action_mailer.delivery_method = :smtp
 

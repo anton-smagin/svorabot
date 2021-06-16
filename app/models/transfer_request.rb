@@ -7,29 +7,29 @@ class TransferRequest < ApplicationRecord # :nodoc:
   OPTIONS = {
     'transfer_from_galich_29_07' => {
       price: 400,
-      count: 25,
+      count: 20,
       type: :to
     },
     'transfer_from_galich_30_07' => {
       price: 400,
-      count: 25,
+      count: 20,
       type: :to
     },
     'transfer_from_svora_01_08_17_30' => {
       price: 400,
-      count: 25,
+      count: 20,
       type: :return
     },
     'transfer_from_svora_01_08_23_00' => {
       price: 400,
-      count: 25,
+      count: 20,
       type: :return
     },
     'transfer_from_moscow_28_07_01_08' => {
       price: 3200,
       count: 40,
       type: :two_way
-    },
+    }
   }.each_value(&:freeze).freeze
 
   def self.left(option)
@@ -38,6 +38,10 @@ class TransferRequest < ApplicationRecord # :nodoc:
       .where(route_to: option, approved: true)
       .or(TransferRequest.where(route_return: option, approved: true))
       .count
+  end
+
+  def self.unavailable?
+    OPTIONS.keys.all? { |option| left(option) <= 0 }
   end
 
   def select_route(route)
@@ -62,11 +66,20 @@ class TransferRequest < ApplicationRecord # :nodoc:
     end
   end
 
+  def selected_routes
+    [route_to, route_return].compact.uniq
+  end
+
   def approve!
+    available =
+      selected_routes.all? { |route| TransferRequest.left(route).positive? }
+    return false unless available
+
     update(approved: true)
     TransferRequestMailer
       .with(user: user, transfer_request: self)
       .completed
-      .deliver_later
+      .deliver_now
+    true
   end
 end

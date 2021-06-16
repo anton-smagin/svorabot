@@ -5,6 +5,6 @@ class TicketRequest < ApplicationRecord # :nodoc:
 
   def self.save_request!(user)
     create(user_id: user.id)
-    TicketRequestMailer.with(user: user).completed.deliver_later
+    TicketRequestMailer.with(user: user).completed.deliver_now
   end
 end
