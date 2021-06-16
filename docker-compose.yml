@@ -10,8 +10,8 @@ services:
       POSTGRES_PASSWORD: $POSTGRES_PASSWORD
 
   redis:
-    image: 'redis:6-alpine'
-    command: redis-server
+    image: redis:4.0.5-alpine
+    command: ["redis-server", "--appendonly", "yes"]
     ports:
       - '6379:6379'
     volumes:
@@ -28,17 +28,7 @@ services:
       - "3000:3000"
     depends_on:
       - db
-      - delayed_job
       - redis
-  delayed_job:
-    build: .
-    command: bundle exec rails jobs:work
-    volumes:
-      - .:/myapp
-    env_file:
-      - ./.env
-    depends_on:
-      - db
 
 volumes:
   redis:

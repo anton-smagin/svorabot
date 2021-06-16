@@ -62,7 +62,8 @@ Rails.application.configure do
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
   # Use memory store for bot sessions.
-  config.telegram_updates_controller.session_store = :redis_store, { expires_in: 1.month }
+  config.telegram_updates_controller.session_store =
+    :redis_store, 'redis://redis/0/cache', { expires_in: 1.month }
 
   host = 'localhost:3000'
   config.action_mailer.default_url_options = { :host => 'localhost:3000', protocol: 'http' }

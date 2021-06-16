@@ -1,2 +1,8 @@
 <h3><%= t('mails.transfer_request_completed') %></h3>
-<h3><%= t('mails', @transfer_request.route ) %></h3>
+<% @transfer_request.selected_routes.each do |route| %>
+  <p>
+    <%= t("telegram_webhooks.#{route}") %> -
+    <%= TransferRequest::OPTIONS[route][:price] %>р.
+  </p>
+<% end %>
+

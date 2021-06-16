@@ -40,9 +40,7 @@ gem 'telegram-bot', '~> 0.15.3'
 # gem 'bootsnap', '>= 1.1.0', require: false
 
 gem 'acts_as_paranoid'
-gem 'delayed_job'
-gem 'delayed_job_active_record'
-gem 'delayed_job_recurring'
+gem 'redis'
 gem 'redis-rails'
 
 group :development, :test do
