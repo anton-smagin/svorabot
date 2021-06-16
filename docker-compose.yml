@@ -9,6 +9,14 @@ services:
     environment:
       POSTGRES_PASSWORD: $POSTGRES_PASSWORD
 
+  redis:
+    image: 'redis:6-alpine'
+    command: redis-server
+    ports:
+      - '6379:6379'
+    volumes:
+      - 'redis:/data'
+
   web:
     build: .
     command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails db:migrate && bundle exec rails s -p 3000 -b '0.0.0.0'"
@@ -20,6 +28,8 @@ services:
       - "3000:3000"
     depends_on:
       - db
+      - delayed_job
+      - redis
   delayed_job:
     build: .
     command: bundle exec rails jobs:work
@@ -29,3 +39,6 @@ services:
       - ./.env
     depends_on:
       - db
+
+volumes:
+  redis:

@@ -1,21 +1,10 @@
 # frozen_string_literal: true
 
-class TicketWebhooksController < Telegram::Bot::UpdatesController
+class TelegramWebhooksController < Telegram::Bot::UpdatesController
   include Telegram::Bot::UpdatesController::MessageContext
 
   before_action :user
-
-  MENU =
-    %i[ticket transfer]
-    .map do |category|
-      [category, t("telegram_webhooks.categories.#{category}")]
-    end.to_h.freeze
-
-  ITEMS_MENU = {
-    'ticket' => ['ticket'],
-    'transfer' => %w[transfer]
-    #'merch' => ['merch']
-  }.freeze
+  around_action :check_ticket_available
 
   TEST_QUESTIONS =
     t('telegram_webhooks.test').keys.freeze
@@ -33,11 +22,8 @@ class TicketWebhooksController < Telegram::Bot::UpdatesController
   def start!(_value = nil, *_args)
     respond_with(
       :photo,
-      photo: File.open(Rails.root.join('public', 'img', 'afisha.png')),
-      reply_markup: default_keyboard
+      photo: File.open(Rails.root.join('public', 'img', 'afisha.png'))
     )
-    return unless ticket_available?
-
     respond_with(
       :message,
       text: t('telegram_webhooks.description.start'),
@@ -58,65 +44,8 @@ class TicketWebhooksController < Telegram::Bot::UpdatesController
     start!
   end
 
-  ITEMS_MENU.each do |item, subitems|
-    define_method("#{item}!") { |*| respond_item_keyboard(item) }
-
-    subitems.each do |subitem|
-      define_method("edit_#{subitem}!") do |*|
-        edit_message(
-          :reply_markup,
-          keyboard: default_keyboard,
-          reply_markup: { inline_keyboard: send("#{subitem}_keyboard") }
-        )
-      end
-    end
-  end
-
-  Cart::ADDABLE_ITEMS.each do |item|
-    define_method("add_#{item}") do
-      cart.items[item] ||= {}
-      cart.items[item]['count'] = (cart.items[item]['count'] || 0) + 1
-      cart.save
-      send("edit_#{Cart.category_by(item)}!")
-    end
-
-    define_method("remove_#{item}") do
-      cart.items[item] ||= {}
-      cart_items = (cart.items[item]['count'] || 0)
-      cart.items[item]['count'] = cart_items - 1 if cart_items.positive?
-      cart.items.delete(item) if cart.items[item]['count'].zero?
-      send("edit_#{Cart.category_by(item)}!") if cart.changed? && cart.save
-    end
-  end
-
-  TransferRequest::OPTIONS.each_key do |item|
-    define_method("add_#{item}") do
-      transfer_request = user.transfer_request || TransferRequest.new(user_id: user.id)
-      if TransferRequest.left(item).positive?
-        transfer_request.select_route(item)
-        transfer_request.save
-      else
-        respond_with(:message, text: t("telegram_webhooks.#{item}.unavailable"))
-      end
-      edit_transfer!
-    end
-  end
-
-  def order_transfer!
-    session[:checkout_callback] = 'save_transfer_request!'
-    if user.contacts_info_filled?
-      respond_with :message, before_complete_response
-    else
-      complete!
-    end
-  end
-
   def action_missing(_action, *args)
     start!(*args)
-  end
-
-  def ticket!
-    start! # delegate ticket to start to get into test
   end
 
   def cart!(*)
@@ -140,6 +69,7 @@ class TicketWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def complete!(value = nil, *)
+    binding.pry
     if value
       user.contacts = payload['text']
       if user.save
@@ -177,7 +107,7 @@ class TicketWebhooksController < Telegram::Bot::UpdatesController
     if value
       user.age = value
       if user.save
-        respond_with :message, before_complete_response
+        respond_with :message, before_complete_text
       else
         save_context :age!
         respond_with(
@@ -225,8 +155,6 @@ class TicketWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def save_ticket_request!(*)
-    return unless ticket_available?
-
     if user.contacts_info_filled?
       TicketRequest.save_request!(user)
       respond_with :message, text: t('telegram_webhooks.thank_you')
@@ -234,6 +162,11 @@ class TicketWebhooksController < Telegram::Bot::UpdatesController
       respond_with :message, text: t('telegram_webhooks.some_data_missed')
       complete!
     end
+  end
+
+  def clear_cart!(*)
+    cart.clear!
+    cart!
   end
 
   def do_nothing
@@ -245,9 +178,8 @@ class TicketWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def check_ticket_available
-    if TicketRequest.without_rejected.count > 200
+    if TicketRequest.without_rejected.count > 150
       respond_with :message, text: t('telegram_webhooks.preorder_closed')
-      false
     elsif (ticket_request = TicketRequest.find_by(user_id: user.id))
       text =
         if ticket_request.not_approved?
@@ -256,16 +188,9 @@ class TicketWebhooksController < Telegram::Bot::UpdatesController
           t('telegram_webhooks.thank_you')
         end
       respond_with :message, text: text
-      false
     else
-      true
+      yield
     end
-  end
-
-  def message(message)
-    return start! if t('telegram_webhooks.categories.home') == message['text']
-
-    send("#{MENU.find { |_k, v| v == message['text'] }&.first}!")
   end
 
   private
@@ -281,7 +206,7 @@ class TicketWebhooksController < Telegram::Bot::UpdatesController
     )
   end
 
-  def before_complete_response
+  def before_complete_text
     {
       text: t(
         'telegram_webhooks.your_contact_and_age_is',
@@ -299,12 +224,7 @@ class TicketWebhooksController < Telegram::Bot::UpdatesController
               callback_data: 'complete!'
             }
           ],
-          [
-            {
-              text: t('telegram_webhooks.pay'),
-              callback_data: session[:checkout_callback]
-            }
-          ]
+          [{ text: t('telegram_webhooks.pay'), callback_data: 'save_ticket_request!' }]
         ]
       }
     }
@@ -321,12 +241,7 @@ class TicketWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def test_keyboard(step, index)
-    if TEST_QUESTIONS[index + 1]
-      next_callback = TEST_QUESTIONS[index + 1]
-    else
-      session[:checkout_callback] = 'save_ticket_request!'
-      next_callback = 'complete'
-    end
+    next_callback = TEST_QUESTIONS[index + 1] || 'complete'
     %w[button_1 button_2].map do |button|
       [
         {
@@ -334,78 +249,6 @@ class TicketWebhooksController < Telegram::Bot::UpdatesController
           callback_data: "#{next_callback}!"
         }
       ]
-    end
-  end
-
-  def transfer_keyboard
-    keyboard =
-      TransferRequest::OPTIONS.map do |option, about|
-        [
-          {
-            text: t(
-              "telegram_webhooks.options.#{option}",
-              price: about[:price],
-              selected: ('✅' if user.transfer_request&.selected_route?(option)),
-              left: TransferRequest.left(option)
-            ),
-            callback_data: "add_#{option}"
-          }
-        ]
-      end
-    if user.transfer_request&.selected_route?
-      [*keyboard, order_transfer_button]
-    else
-      keyboard
-    end
-  end
-
-  def order_transfer_button
-    [
-      {
-        text: t('telegram_webhooks.pay'), callback_data: 'order_transfer!'
-      }
-    ]
-  end
-
-  def merch_keyboard
-    Cart::MERCH_OPTIONS
-      .flat_map { |option, price| build_cart_item(option, price) }
-  end
-
-  def build_cart_item(option, price)
-    [
-      [
-        {
-          text: t("telegram_webhooks.options.#{option}",
-                  price: price,
-                  count: cart.items.dig(option, 'count') || 0),
-          callback_data: 'do_nothing'
-        }
-      ],
-      [
-        { text: '➖', callback_data: "remove_#{option}" },
-        { text: '➕', callback_data: "add_#{option}" }
-      ]
-    ]
-  end
-
-  def default_keyboard
-    {
-      keyboard: MENU.values.each_slice(3).to_a,
-      resize_keyboard: true,
-      one_time_keyboard: false,
-      selective: false
-    }
-  end
-
-  def send_photo(item)
-    Dir.foreach(Rails.root.join('public', 'img', item.to_s)) do |filename|
-      next unless /png|gif|jpeg|jpg/.match?(filename)
-
-      file =
-        File.open(Rails.root.join('public', 'img', item.to_s, filename))
-
-      reply_with :photo, photo: file
     end
   end
 end

@@ -98,7 +98,7 @@ Rails.application.configure do
   # routes.default_url_options = {host: 'yourdomain.com', protocol: 'https'}
 
   # Configure session store for telegram bot.
-  config.telegram_updates_controller.session_store = :active_record_store
+  config.telegram_updates_controller.session_store = :redis_store, { expires_in: 1.month }
 
   config.action_mailer.delivery_method = :smtp
 

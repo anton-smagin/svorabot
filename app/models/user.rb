@@ -9,7 +9,7 @@ class User < ApplicationRecord # :nodoc:
   %i[instagram first_name last_name contacts]
     .each { |field| validates_length_of field, in: 2..60, allow_nil: true }
 
-  def contact_info_filled?
+  def contacts_info_filled?
     [instagram, first_name, last_name, age, contacts].all?(&:present?)
   end
 end

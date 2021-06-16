@@ -39,11 +39,11 @@ gem 'telegram-bot', '~> 0.15.3'
 # Reduces boot times through caching; required in config/boot.rb
 # gem 'bootsnap', '>= 1.1.0', require: false
 
-gem 'activerecord-session_store'
 gem 'acts_as_paranoid'
 gem 'delayed_job'
 gem 'delayed_job_active_record'
 gem 'delayed_job_recurring'
+gem 'redis-rails'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

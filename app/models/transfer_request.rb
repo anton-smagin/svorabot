@@ -5,14 +5,61 @@ class TransferRequest < ApplicationRecord # :nodoc:
   belongs_to :user
 
   OPTIONS = {
-    'transfer_from_moscow_29_07_02_08' => { price: 3200, count: 40 },
-    'transfer_from_galich_30_07_02_08' => { price: 700, count: 25 },
-    'transfer_from_galich_31_07_02_08' => { price: 700, count: 25 }
+    'transfer_from_galich_29_07' => {
+      price: 400,
+      count: 25,
+      type: :to
+    },
+    'transfer_from_galich_30_07' => {
+      price: 400,
+      count: 25,
+      type: :to
+    },
+    'transfer_from_svora_01_08_17_30' => {
+      price: 400,
+      count: 25,
+      type: :return
+    },
+    'transfer_from_svora_01_08_23_00' => {
+      price: 400,
+      count: 25,
+      type: :return
+    },
+    'transfer_from_moscow_28_07_01_08' => {
+      price: 3200,
+      count: 40,
+      type: :two_way
+    },
   }.each_value(&:freeze).freeze
 
   def self.left(option)
     OPTIONS.dig(option, :count) -
-      TransferRequest.where(route: option, approved: true).count
+      TransferRequest
+      .where(route_to: option, approved: true)
+      .or(TransferRequest.where(route_return: option, approved: true))
+      .count
+  end
+
+  def select_route(route)
+    case OPTIONS[route][:type]
+    when :two_way
+      self.route_to = route
+      self.route_return = route
+    when :to
+      self.route_to = route
+      self.route_return = nil if OPTIONS.dig(route_return, :type) == :two_way
+    when :return
+      self.route_return = route
+      self.route_to = nil if OPTIONS.dig(route_to, :type) == :two_way
+    end
+  end
+
+  def selected_route?(option = nil)
+    if option.nil?
+      [route_to, route_return].compact.present?
+    else
+      route_to == option || route_return == option
+    end
   end
 
   def approve!

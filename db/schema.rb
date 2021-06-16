@@ -66,7 +66,8 @@ ActiveRecord::Schema.define(version: 2021_06_15_123008) do
 
   create_table "transfer_requests", force: :cascade do |t|
     t.bigint "user_id"
-    t.string "route"
+    t.string "route_to"
+    t.string "route_return"
     t.boolean "approved"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
