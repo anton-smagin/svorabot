@@ -15,7 +15,7 @@ class TransferRequest < ApplicationRecord # :nodoc:
       count: 20,
       type: :to
     },
-    'transfer_from_svora_01_08_17_30' => {
+    'transfer_from_svora_01_08_17_00' => {
       price: 400,
       count: 20,
       type: :return
