@@ -26,7 +26,7 @@ class TransferRequest < ApplicationRecord # :nodoc:
       type: :return
     },
     'transfer_from_moscow_28_07_01_08' => {
-      price: 3200,
+      price: 3500,
       count: 40,
       type: :two_way
     }
@@ -75,11 +75,11 @@ class TransferRequest < ApplicationRecord # :nodoc:
       selected_routes.all? { |route| TransferRequest.left(route).positive? }
     return false unless available
 
-    update(approved: true)
-    TransferRequestMailer
-      .with(user: user, transfer_request: self)
-      .completed
-      .deliver_now
+    self.approved = true
+    if changed? && save
+      TransferRequestMailer
+        .with(user: user, transfer_request: self).completed.deliver_now
+    end
     true
   end
 end

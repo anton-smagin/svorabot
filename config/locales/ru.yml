@@ -36,7 +36,7 @@ ru:
       transfer_from_galich_30_07: '🚐 Галич-Свора 30.07 10:00 %{price}р.%{selected}'
       transfer_from_svora_01_08_17_00: '🚐 Свора-Галич 01.08 17:00 %{price}р.%{selected}'
       transfer_from_svora_01_08_23_00: '🚐 Свора-Галич 1.08 23:00 %{price}р.%{selected}'
-      transfer_from_moscow_28_07_01_08: "🌃 🚌 Москва-Свора-Москва 28.07—1.08 %{price}р.%{selected}"
+      transfer_from_moscow_28_07_01_08: "🌃 🚌 Мск-Свора-Мск 28.07—1.08 %{price}р.%{selected}"
       tshirt: 'Футболка белая/черная %{price}р. - %{count}'
       flask: 'Фляжка Свора 400 мл %{price}р. - %{count}'
     unavailable: 'закончился😔'
