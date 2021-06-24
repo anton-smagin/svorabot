@@ -3,8 +3,6 @@
 class TelegramWebhooksController < Telegram::Bot::UpdatesController
   include Telegram::Bot::UpdatesController::MessageContext
 
-  before_action :user
-
   MENU =
     %i[ticket transfer]
     .map do |category|
