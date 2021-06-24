@@ -317,6 +317,10 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     send("#{MENU.find { |_k, v| v == message['text'] }&.first}!")
   end
 
+  def unsupported_payload_type
+    nil # do nothing if bot blocked
+  end
+
   private
 
   def cart
