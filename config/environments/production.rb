@@ -99,7 +99,7 @@ Rails.application.configure do
 
   # Configure session store for telegram bot.
   config.telegram_updates_controller.session_store =
-    :redis_store, 'redis://redis/0/cache', { expires_in: 1.month }
+    :redis_store, 'redis://redis/0/cache', { expires_in: 1.day }
 
   config.action_mailer.delivery_method = :smtp
 
