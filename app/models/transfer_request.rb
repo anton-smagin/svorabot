@@ -47,13 +47,13 @@ class TransferRequest < ApplicationRecord # :nodoc:
   def select_route(route)
     case OPTIONS[route][:type]
     when :two_way
-      self.route_to = route
-      self.route_return = route
+      self.route_to = route == route_to ? nil : route
+      self.route_return = route == route_return ? nil : route
     when :to
-      self.route_to = route
+      self.route_to = route == route_to ? nil : route
       self.route_return = nil if OPTIONS.dig(route_return, :type) == :two_way
     when :return
-      self.route_return = route
+      self.route_return = route == route_return ? nil : route
       self.route_to = nil if OPTIONS.dig(route_to, :type) == :two_way
     end
   end
