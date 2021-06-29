@@ -7,7 +7,7 @@ class TransferRequest < ApplicationRecord # :nodoc:
   OPTIONS = {
     'transfer_from_galich_29_07' => {
       price: 400,
-      count: 23,
+      count: 39,
       type: :to
     },
     'transfer_from_galich_30_07' => {
