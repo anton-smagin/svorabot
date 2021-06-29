@@ -272,7 +272,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   def save_transfer_request!(*)
     if user.contacts_info_filled?
       if transfer_request.approve!
-        respond_with :message, text: t('telegram_webhooks.thank_you')
+        respond_with :message, text: t('telegram_webhooks.thank_you_transfer')
       else
         respond_with(
           :message, text: t('telegram_webhooks.transfer_request_unavailable')
@@ -420,7 +420,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   def order_transfer_button
     [
       {
-        text: t('telegram_webhooks.pay'), callback_data: 'order_transfer!'
+        text: t('telegram_webhooks.continue'), callback_data: 'order_transfer!'
       }
     ]
   end
