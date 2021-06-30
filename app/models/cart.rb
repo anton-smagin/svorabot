@@ -7,8 +7,9 @@ class Cart < ApplicationRecord # :nodoc:
   scope :completed, -> { where(completed: true) }
 
   MERCH_OPTIONS = {
-    'tshirt' => 1800,
-    'flask' => 500
+    'tshirt' => 2200,
+    'flask' => 600,
+    'carabiner' => 500
   }.freeze
 
   ALL_OPTIONS = {
@@ -49,14 +50,14 @@ class Cart < ApplicationRecord # :nodoc:
     items.slice(*(ALL_OPTIONS.keys - MERCH_OPTIONS.keys))
   end
 
-  def complete!
+  def complete_merch!
     items.each { |item, info| info['price'] = self.class.price_by(item) }
     self.completed = true
     save
-    CartCompletedMailer.with(cart: self).cart_completed.deliver_now
-    if merch_items.present?
-      CartCompletedMailer.with(cart: self).cart_with_merch_completed.deliver_now
-    end
+    CartCompletedMailer
+      .with(cart: self, user: user)
+      .cart_with_merch_completed
+      .deliver_now
   end
 
   def clear!
