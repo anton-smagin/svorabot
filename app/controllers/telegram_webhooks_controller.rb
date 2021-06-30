@@ -33,6 +33,12 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
               text: t('telegram_webhooks.order_ticket'),
               callback_data: 'order_ticket!'
             }
+          ],
+          [
+            {
+              text: t('telegram_webhooks.order_transfer'),
+              callback_data: 'transfer!'
+            }
           ]
         ]
       }
