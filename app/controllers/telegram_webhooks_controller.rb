@@ -15,19 +15,6 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     #'merch' => ['merch']
   }.freeze
 
-  TEST_QUESTIONS =
-    t('telegram_webhooks.test').keys.freeze
-
-  TEST_QUESTIONS.each.with_index do |step, index|
-    define_method("#{step}!") do |*|
-      respond_with(
-        :message,
-        text: t("telegram_webhooks.test.#{step}.question"),
-        reply_markup: { inline_keyboard: test_keyboard(step, index) }
-      )
-    end
-  end
-
   def start!(_value = nil, *_args)
     respond_with(
       :photo,
@@ -43,8 +30,8 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
         inline_keyboard: [
           [
             {
-              text: t('telegram_webhooks.go'),
-              callback_data: "#{TEST_QUESTIONS[0]}!"
+              text: t('telegram_webhooks.order_ticket'),
+              callback_data: 'order_ticket!'
             }
           ]
         ]
@@ -89,7 +76,12 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   TransferRequest::OPTIONS.each_key do |item|
     define_method("add_#{item}") do
-      if TransferRequest.left(item).positive?
+      if transfer_request.approved
+        return respond_with(
+          :message,
+          text: t('telegram_webhooks.transfer_request_unchangable')
+        )
+      elsif TransferRequest.left(item).positive?
         transfer_request.select_route(item)
         transfer_request.save
       else
@@ -112,33 +104,29 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     end
     return respond_item_keyboard('transfer') unless transfer_request.approved?
 
-    routes =
-      transfer_request
-      .selected_routes
-      .map { |route| [t("telegram_webhooks.#{route}")] }
     respond_with(
       :message,
       text: t(
         'telegram_webhooks.selected_transfer_request',
-        routes: routes.join("\n")
+        routes: selected_transfer_routes
       )
     )
   end
 
   def order_transfer!
-    session[:checkout_callback] = 'save_transfer_request!'
     if user.contacts_info_filled?
-      respond_with :message, before_complete_response
+      save_transfer_request!
     else
+      session[:checkout_callback] = 'save_transfer_request!'
       complete!
     end
   end
 
   def order_ticket!
-    session[:checkout_callback] = 'save_ticket_request!'
     if user.contacts_info_filled?
-      respond_with :message, before_complete_response
+      save_ticket_request!
     else
+      session[:checkout_callback] = 'save_ticket_request!'
       complete!
     end
   end
@@ -272,7 +260,14 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   def save_transfer_request!(*)
     if user.contacts_info_filled?
       if transfer_request.approve!
-        respond_with :message, text: t('telegram_webhooks.thank_you_transfer')
+        respond_with :message, text: t('telegram_webhooks.thank_you')
+        respond_with(
+          :message,
+          text: t(
+            'telegram_webhooks.selected_transfer_request',
+            routes: selected_transfer_routes
+          )
+        )
       else
         respond_with(
           :message, text: t('telegram_webhooks.transfer_request_unavailable')
@@ -378,22 +373,6 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     )
   end
 
-  def test_keyboard(step, index)
-    if TEST_QUESTIONS[index + 1]
-      next_callback = TEST_QUESTIONS[index + 1]
-    else
-      next_callback = 'order_ticket'
-    end
-    %w[button_1 button_2].map do |button|
-      [
-        {
-          text: t("telegram_webhooks.test.#{step}.#{button}"),
-          callback_data: "#{next_callback}!"
-        }
-      ]
-    end
-  end
-
   def transfer_keyboard
     keyboard =
       TransferRequest::OPTIONS.map do |option, about|
@@ -454,6 +433,13 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
       one_time_keyboard: false,
       selective: false
     }
+  end
+
+  def selected_transfer_routes
+    transfer_request
+      .selected_routes
+      .map { |route| [t("telegram_webhooks.#{route}")] }
+      .join("\n")
   end
 
   def send_photo(item)
