@@ -22,7 +22,7 @@ class TransferRequest < ApplicationRecord # :nodoc:
     },
     'transfer_from_svora_01_08_23_00' => {
       price: 400,
-      count: 19,
+      count: 34,
       type: :return
     },
     'transfer_from_moscow_28_07_01_08' => {
