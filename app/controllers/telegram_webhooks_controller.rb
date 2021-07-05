@@ -64,9 +64,13 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
     define_method("remove_#{item}") do
       cart.items[item] ||= {}
-      cart_items = (cart.items[item]['count'] || 0)
-      cart.items[item]['count'] = cart_items - 1 if cart_items.positive?
-      cart.items.delete(item) if cart.items[item]['count'].zero?
+      item_count = cart.items.dig(item, 'count') || 0
+      item_count -= 1
+      if item_count <= 0
+        cart.items.delete(item)
+      else
+        cart.items[item]['count'] = item_count
+      end
       send("edit_#{Cart.category_by(item)}!") if cart.changed? && cart.save
     end
   end
