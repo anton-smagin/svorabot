@@ -306,10 +306,10 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
 
   def save_merch_request!(*)
     if user.contacts_info_filled?
-      cart.complete_merch!
-      respond_with :message, text: t('telegram_webhooks.thank_you')
+      cart.complete_merch! &&
+        respond_with(:message, text: t('telegram_webhooks.thank_you'))
     else
-      session[:checkout_callback] = 'save_transfer_request!'
+      session[:checkout_callback] = 'save_merch_request!'
       respond_with :message, text: t('telegram_webhooks.some_data_missed')
       complete!
     end
@@ -342,9 +342,12 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def message(message)
-    return start! if t('telegram_webhooks.categories.home') == message['text']
-
-    send("#{MENU.find { |_k, v| v == message['text'] }&.first}!")
+    menu_category = "#{MENU.find { |_k, v| v == message['text'] }&.first}!"
+    if respond_to?(menu_category) && menu_category != '!'
+      send(menu_category)
+    else
+      start!
+    end
   end
 
   def unsupported_payload_type

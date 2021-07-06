@@ -51,6 +51,8 @@ class Cart < ApplicationRecord # :nodoc:
   end
 
   def complete_merch!
+    return false if merch_items.empty?
+
     items.each { |item, info| info['price'] = self.class.price_by(item) }
     self.completed = true
     save
@@ -58,6 +60,7 @@ class Cart < ApplicationRecord # :nodoc:
       .with(cart: self, user: user)
       .cart_with_merch_completed
       .deliver_now
+    true
   end
 
   def clear!
