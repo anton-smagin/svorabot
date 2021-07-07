@@ -163,26 +163,6 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     start! # delegate ticket to start to get into test
   end
 
-  def cart!(*)
-    return cart_empty if cart.empty?
-
-    respond_with(
-      :message,
-      text: cart_total_text,
-      reply_markup: {
-        inline_keyboard: [
-          [
-            {
-              text: t('telegram_webhooks.forward_to_complete'),
-              callback_data: 'complete!'
-            }
-          ],
-          [{ text: t('telegram_webhooks.clear'), callback_data: 'clear_cart!' }]
-        ]
-      }
-    )
-  end
-
   def complete!(value = nil, *)
     if value
       user.contacts = payload['text']
