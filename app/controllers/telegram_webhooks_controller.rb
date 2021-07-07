@@ -4,7 +4,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   include Telegram::Bot::UpdatesController::MessageContext
 
   MENU =
-    %i[ticket transfer merch]
+    %i[ticket transfer merch rehab]
     .map do |category|
       [category, t("telegram_webhooks.categories.#{category}")]
     end.to_h.freeze
@@ -23,18 +23,14 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
       reply_markup: {
         inline_keyboard: [
           order_button('ticket'),
-          [
-            {
-              text: t('telegram_webhooks.order_transfer'),
-              callback_data: 'transfer!'
-            }
-          ],
-          [
-            {
-              text: t('telegram_webhooks.order_merch'),
-              callback_data: 'merch!'
-            }
-          ]
+          *%w[transfer merch rehab].map do |category|
+            [
+              {
+                text: t("telegram_webhooks.order_#{category}"),
+                callback_data: "#{category}!"
+              }
+            ]
+          end
         ]
       }
     )
@@ -44,7 +40,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     start!
   end
 
-  MENU.keys.each do |subitem|
+  MENU.each_key do |subitem|
     define_method("edit_#{subitem}!") do |*|
       edit_message(
         :reply_markup,
@@ -86,10 +82,9 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
         transfer_request.select_route(item)
         transfer_request.save
       else
-        text = [
-          t("telegram_webhooks.#{item}"),
-          t('telegram_webhooks.unavailable')
-        ].join(' ')
+        text =
+          [t("telegram_webhooks.#{item}"), t('telegram_webhooks.unavailable')]
+          .join(' ')
         respond_with(:message, text: text)
       end
       edit_transfer!
@@ -117,13 +112,25 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   def merch!
     respond_with(:message, text: t('telegram_webhooks.description.merch'))
     t('telegram_webhooks.merch').each do |key, text|
-      respond_with(:message, text: text)
-      send_photo('merch', "#{key}.jpeg")
+      respond_with(:message, text: text) and send_photo('merch', "#{key}.jpeg")
     end
     respond_with(
       :message,
       text: '👕',
       reply_markup: { inline_keyboard: merch_keyboard },
+      parse_mode: 'Markdown'
+    )
+  end
+
+  def rehab!
+    respond_with(:message, text: t('telegram_webhooks.description.rehab'))
+    t('telegram_webhooks.rehab').each do |key, text|
+      respond_with(:message, text: text) and send_photo('rehab', "#{key}.jpeg")
+    end
+    respond_with(
+      :message,
+      text: '🧘‍♂️🧘‍♂️🧘‍♂️🧘‍♂️🧘‍♂️🧘‍♂️🧘‍♂️🧘‍♂️🧘‍♂️🧘‍♂️',
+      reply_markup: { inline_keyboard: rehab_keyboard },
       parse_mode: 'Markdown'
     )
   end
@@ -139,6 +146,16 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
       :reply_markup,
       keyboard: default_keyboard,
       reply_markup: { inline_keyboard: merch_keyboard }
+    )
+  end
+
+  def order_rehab!
+    order('rehab')
+    @cart = nil
+    edit_message(
+      :reply_markup,
+      keyboard: default_keyboard,
+      reply_markup: { inline_keyboard: rehab_keyboard }
     )
   end
 
@@ -295,6 +312,17 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     end
   end
 
+  def save_rehab_request!(*)
+    if user.contacts_info_filled?
+      cart.complete_rehab! &&
+        respond_with(:message, text: t('telegram_webhooks.thank_you'))
+    else
+      session[:checkout_callback] = 'save_rehab_request!'
+      respond_with :message, text: t('telegram_webhooks.some_data_missed')
+      complete!
+    end
+  end
+
   def do_nothing
     # do nothing
   end
@@ -430,6 +458,15 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     return keyboard if cart.merch_items.blank?
 
     [*keyboard, order_button('merch')]
+  end
+
+  def rehab_keyboard
+    keyboard =
+      Cart::REHAB_OPTIONS
+      .flat_map { |option, price| build_cart_item(option, price) }
+    return keyboard if cart.rehab_items.blank?
+
+    [*keyboard, order_button('rehab')]
   end
 
   def build_cart_item(option, price)

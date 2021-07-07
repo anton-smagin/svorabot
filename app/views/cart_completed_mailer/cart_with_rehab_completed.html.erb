@@ -1,5 +1,6 @@
-<%= t('telegram_webhooks.categories.merch') %>
+<%= t('telegram_webhooks.categories.rehab') %>
 <% @cart.items.sort_by { |k, v| Cart::ALL_OPTIONS.keys.index(k) }.each do |item, info| %>
   <p><%= t("telegram_webhooks.options.#{item}", price: info['price'], count: info['count']) %></p>
 <% end %>
- <p><%= t('telegram_webhooks.cart_total', total: @cart.merch_total) %></p>
+ <p><%= t('telegram_webhooks.cart_total', total: @cart.rehab_total) %></p>
+
