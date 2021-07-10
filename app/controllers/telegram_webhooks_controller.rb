@@ -122,7 +122,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
     end
     respond_with(
       :message,
-      text: '👕',
+      text: '👕👕👕👕👕👕👕👕👕👕',
       reply_markup: { inline_keyboard: merch_keyboard },
       parse_mode: 'Markdown'
     )
