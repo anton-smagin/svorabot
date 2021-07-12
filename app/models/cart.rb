@@ -12,12 +12,19 @@ class Cart < ApplicationRecord # :nodoc:
     'carabiner' => 500
   }.freeze
 
+  REHAB_OPTIONS = {
+    'bath' => 8000,
+    'pogorelovo' => 2000
+  }.freeze
+
   ALL_OPTIONS = {
-    **MERCH_OPTIONS
+    **MERCH_OPTIONS,
+    **REHAB_OPTIONS
   }
 
   ITEMS = {
-    merch: MERCH_OPTIONS.keys
+    merch: MERCH_OPTIONS.keys,
+    rehab: REHAB_OPTIONS.keys
   }.freeze
 
   ADDABLE_ITEMS = ITEMS.values.flatten.freeze
@@ -34,8 +41,8 @@ class Cart < ApplicationRecord # :nodoc:
     items.sum { |item, info| self.class.price_by(item) * info['count'] }
   end
 
-  def party_total
-    party_items.sum { |item, info| self.class.price_by(item) * info['count'] }
+  def rehab_total
+    rehab_items.sum { |item, info| self.class.price_by(item) * info['count'] }
   end
 
   def merch_total
@@ -46,19 +53,34 @@ class Cart < ApplicationRecord # :nodoc:
     items.slice(*MERCH_OPTIONS.keys)
   end
 
-  def party_items
-    items.slice(*(ALL_OPTIONS.keys - MERCH_OPTIONS.keys))
+  def rehab_items
+    items.slice(*REHAB_OPTIONS.keys)
   end
 
   def complete_merch!
     return false if merch_items.empty?
 
-    items.each { |item, info| info['price'] = self.class.price_by(item) }
+    self.items = merch_items
+    merch_items.each { |item, info| info['price'] = self.class.price_by(item) }
     self.completed = true
     save
     CartCompletedMailer
       .with(cart: self, user: user)
       .cart_with_merch_completed
+      .deliver_now
+    true
+  end
+
+  def complete_rehab!
+    return false if rehab_items.empty?
+
+    self.items = rehab_items
+    rehab_items.each { |item, info| info['price'] = self.class.price_by(item) }
+    self.completed = true
+    save
+    CartCompletedMailer
+      .with(cart: self, user: user)
+      .cart_with_rehab_completed
       .deliver_now
     true
   end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class TicketRequestMailer < ApplicationMailer
   EMAILS_TO = ENV['ORDERS_MAILS'].split(',').freeze
 
