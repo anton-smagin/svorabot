@@ -12,7 +12,7 @@ class TransferRequest < ApplicationRecord # :nodoc:
     },
     'transfer_from_galich_30_07' => {
       price: 400,
-      count: 21,
+      count: 20,
       type: :to
     },
     'transfer_from_svora_01_08_17_00' => {
