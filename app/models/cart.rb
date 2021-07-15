@@ -8,7 +8,6 @@ class Cart < ApplicationRecord # :nodoc:
 
   MERCH_OPTIONS = {
     'tshirt' => 2200,
-    'flask' => 600,
     'carabiner' => 500
   }.freeze
 
