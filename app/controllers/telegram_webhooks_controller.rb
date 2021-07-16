@@ -332,7 +332,7 @@ class TelegramWebhooksController < Telegram::Bot::UpdatesController
   end
 
   def ticket_available?
-    if TicketRequest.without_rejected.count > 200
+    if TicketRequest.without_rejected.count > 300
       respond_with :message, text: t('telegram_webhooks.preorder_closed')
       false
     elsif (ticket_request = TicketRequest.find_by(user_id: user.id))
