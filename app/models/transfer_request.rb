@@ -17,17 +17,17 @@ class TransferRequest < ApplicationRecord # :nodoc:
     },
     'transfer_from_svora_01_08_17_00' => {
       price: 400,
-      count: 23,
+      count: 24,
       type: :return
     },
     'transfer_from_svora_01_08_23_00' => {
       price: 400,
-      count: 35,
+      count: 34,
       type: :return
     },
     'transfer_from_moscow_28_07_01_08' => {
       price: 3500,
-      count: 40,
+      count: 39,
       type: :two_way
     }
   }.each_value(&:freeze).freeze
