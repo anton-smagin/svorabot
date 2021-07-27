@@ -27,7 +27,7 @@ class TransferRequest < ApplicationRecord # :nodoc:
     },
     'transfer_from_moscow_28_07_01_08' => {
       price: 3500,
-      count: 38,
+      count: 37,
       type: :two_way
     }
   }.each_value(&:freeze).freeze
