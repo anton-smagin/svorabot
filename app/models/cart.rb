@@ -7,8 +7,7 @@ class Cart < ApplicationRecord # :nodoc:
   scope :completed, -> { where(completed: true) }
 
   MERCH_OPTIONS = {
-    'tshirt' => 2200,
-    'carabiner' => 500
+    'tshirt' => 2200
   }.freeze
 
   REHAB_OPTIONS = {
@@ -19,7 +18,7 @@ class Cart < ApplicationRecord # :nodoc:
   ALL_OPTIONS = {
     **MERCH_OPTIONS,
     **REHAB_OPTIONS
-  }
+  }.freeze
 
   ITEMS = {
     merch: MERCH_OPTIONS.keys,
