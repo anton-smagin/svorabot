@@ -6,9 +6,7 @@ class Cart < ApplicationRecord # :nodoc:
   belongs_to :user
   scope :completed, -> { where(completed: true) }
 
-  MERCH_OPTIONS = {
-    'tshirt' => 2200
-  }.freeze
+  MERCH_OPTIONS = {}.freeze
 
   REHAB_OPTIONS = {
     'bath' => 8000,
